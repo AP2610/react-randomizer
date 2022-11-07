@@ -13,7 +13,7 @@ const ConfettiComponent = (props) => {
 			const timerID = setTimeout(() => setConfetti(false), 1000 * 10);
 			return () => clearTimeout(timerID);
 		}
-	}, [show]);
+	}, [show]); // eslint-disable-line react-hooks/exhaustive-deps
 
 	return <Confetti width={width} height={height} />;
 };
