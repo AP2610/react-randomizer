@@ -32,6 +32,10 @@
   .team-member {
     align-items: center;
     display: flex;
+
+    &.hots {
+      scale: 1.2;
+    }
   }
 
   .is-hots {

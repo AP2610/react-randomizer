@@ -1,9 +1,16 @@
 import { useState } from 'react';
+import useSound from 'use-sound';
 import { TEAM } from "./data/teamDetails";
 import { shuffle, randomNumberFromInterval, capitalizeString } from './utils/utils';
 import TeamList from './components/TeamList';
 import ConfettiComponent from './components/Confetti';
-import './styles/App.scss';
+import './assets/styles/App.scss';
+
+// Sounds
+import drumRoll from './assets/sounds/drum-roll.mp3';
+import drumRollEnd from './assets/sounds/drum-roll-end.mp3';
+import crowdApplause from './assets/sounds/crowd-applause.wav';
+import clsx from 'clsx';
 
 const App = () => {
 	const [hots, setHots] = useState('');
@@ -11,12 +18,20 @@ const App = () => {
 	const [stopTime, setStopTime] = useState(randomNumberFromInterval(15, 30));
 	const [isRandomizerActive, setIsRandomizerActive] = useState(false);
 	const [showConfetti, setShowConfetti] = useState(false);
+	const [playDrumRoll, { stop: stopDrumRoll }] = useSound(drumRoll);
+	const [playDrumRollEnd] = useSound(drumRollEnd);
+	const [playCrowdApplause] = useSound(crowdApplause);
 
     // Creates a list element for each team member.
 	const teamMemberElements = team.map((teamMember, index) => {
 		const { name, avatar } = teamMember;
+		const classes = clsx('team-member', {
+			'active': teamMember?.isActive,
+			'hots': !isRandomizerActive && teamMember?.isHots
+		});
+
 		return (
-			<li className={`${teamMember?.isActive ? 'active' : ''} team-member`} key={index}>
+			<li className={classes} key={index}>
 				<img src={avatar} alt="" />
 				<h4>{capitalizeString(name)}</h4>
 			</li>
@@ -57,6 +72,9 @@ const App = () => {
 				clearTimeout(timeoutId);
 				setIsRandomizerActive(false); // Turn off the randomizer.
 				setShowConfetti(true); // Indicate that it is over to show confetti.
+				stopDrumRoll();
+				playDrumRollEnd();
+				playCrowdApplause();
 			}
 		};
 
@@ -68,6 +86,7 @@ const App = () => {
 		setStopTime(randomNumberFromInterval(15, 30));
 		repeat(team.length + 1, setIsActiveOnTeamMembers);
 		setIsRandomizerActive(true);
+		playDrumRoll();
 	};
 
 	return (
@@ -76,19 +95,17 @@ const App = () => {
                 <h1>Randomizer</h1>
             </div>
             <main>
-                <TeamList 
-                    teamMemberElements={teamMemberElements} 
-                    isRandomizerActive={isRandomizerActive} 
-                    onRandomizeStartClick={handleRandomizeStartClick} 
-                />
-
-                {!isRandomizerActive && hots && (
-                    <div className="h1-container">
-                        <h1 className="is-hots">Congratulations {capitalizeString(hots?.name)}, you are the new HOTS!</h1>
-                    </div>
-                )}
-
-                {showConfetti && hots && !isRandomizerActive && <ConfettiComponent show={showConfetti} setConfetti={setShowConfetti} />}
+				<TeamList
+					teamMemberElements={teamMemberElements}
+					isRandomizerActive={isRandomizerActive}
+					onRandomizeStartClick={handleRandomizeStartClick}
+				/>
+				{!isRandomizerActive && hots && (
+					<div className="h1-container">
+						<h1 className="is-hots">Congratulations {capitalizeString(hots?.name)}, you are the new HOTS!</h1>
+					</div>
+				)}
+				{showConfetti && hots && !isRandomizerActive && <ConfettiComponent show={showConfetti} setConfetti={setShowConfetti} />}
             </main>
         </section>
 	);
